@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pinterest Slideshow</title>
+  <style>
+    body { background: black; color: white; text-align: center; margin: 0; }
+    img, video { max-width: 100%; max-height: 90vh; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Pinterest Slideshow</h1>
+  <div id="slideshow"></div>
+
+  <script>
+    let current = 0;
+    let media = [];
+
+    async function loadPins() {
+      const res = await fetch("/api/pins?board=ZEEMAN001/dope-pics");
+      const data = await res.json();
+      media = data.media;
+      showNext();
+    }
+
+    function showNext() {
+      const container = document.getElementById("slideshow");
+      container.innerHTML = "";
+
+      if (media.length === 0) return;
+
+      const item = media[current];
+      if (item.type === "image") {
+        const img = document.createElement("img");
+        img.src = item.url;
+        container.appendChild(img);
+        setTimeout(showNext, 5000); // 5 seconds for images
+      } else if (item.type === "video") {
+        const vid = document.createElement("video");
+        vid.src = item.url;
+        vid.autoplay = true;
+        vid.controls = false;
+        vid.onended = showNext; // move on when video finishes
+        container.appendChild(vid);
+      }
+
+      current = (current + 1) % media.length;
+    }
+
+    loadPins();
+    setInterval(loadPins, 5 * 60 * 1000); // refresh every 5 min
+  </script>
+</body>
+</html>
